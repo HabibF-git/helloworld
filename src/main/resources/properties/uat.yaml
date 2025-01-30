@@ -1,0 +1,22 @@
+#properties for the DEV environment
+
+api:
+  id: "000000"
+
+application:
+  name: "uat-helloworld-sys-app"
+appEnvironment: "uat"
+
+timeZone: "America/Los_Angeles"
+
+#Common HTTP Listener Configuration Properties
+http:
+  protocol: "HTTP"
+  host: "0.0.0.0"
+  port: "8086"
+  
+exampleValue: "![ksRRhGboa+w=]"           
+scheduler:
+  main:
+    frequency: "0 0/1 * * * ?"
+    maxconcurrency: "1"

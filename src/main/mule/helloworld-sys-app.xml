@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule 
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" 
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+						http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+						http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	
+	<flow name="helloworld-sys-appFlow" doc:id="7e04a646-764d-4c0d-8813-f7ad7639e36b" >
+		<http:listener doc:name="Listener" doc:id="03e2a2fb-b0a0-4d04-89f8-76652fffb9f5" config-ref="HttpListenerConfig" path="/api/healthcheck" allowedMethods="GET">
+			<http:response statusCode="#[vars.httpStatus default 200]" >
+				<http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+			</http:response>
+			<http:error-response statusCode="#[vars.httpStatus default 500]">
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="42375fb7-5bf5-461d-93f7-8fbd4de9deaa" message="start-health check"/>
+		<ee:transform doc:name="Prepare Response Payload" doc:id="9ac7f557-66e2-4551-ad26-bfb633b26c7c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{ 
+	"status"	: "success",
+	"environment": p('environment') ,
+	"example": p('secure::exampleValue'),
+	"timeStamp" : now() >> Mule::p("timeZone"),
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="76ca5cfb-76e4-4bca-9dc6-95a7a2e791ac" />
+	</flow>
+	<flow name="helloworld-sys-app:main-scheduler" doc:id="d2c00884-6c7d-44ac-9b93-b5484bf5d554" maxConcurrency="${scheduler.main.maxconcurrency}" >
+		<scheduler doc:name="Scheduler" doc:id="9db03159-5a9a-4290-ab62-c30052315aa5" doc:description="Scheduler" disallowConcurrentExecution="true">
+			<scheduling-strategy >
+				<cron expression="${scheduler.main.frequency}"  timeZone="${timeZone}" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="8771193b-2f4d-4508-b009-314c2dccdb5d" message="start-scheduler"/>
+		<ee:transform doc:name="Prepare Response Payload" doc:id="3c6efced-c84e-49f1-84e8-684d0446af07" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{ 
+	"status"	: "success",
+	"environment": p('environment') ,
+	"example": p('secure::exampleValue'),
+	"timeStamp" : now() >> Mule::p("timeZone"),
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="8ed30cdc-9f54-4a1b-909e-c6a7b3615ca5" message="end-scheduler"/>
+	</flow>
+	
+</mule>
